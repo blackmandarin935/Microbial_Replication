@@ -8,6 +8,8 @@ const controls = document.querySelectorAll(".control");
 const speedInput = document.querySelector('[data-control="speed"] input');
 const growthChart = document.getElementById("growthChart");
 const spikeLog = document.getElementById("spikeLog");
+const readoutPanel = document.querySelector(".readout");
+const readoutDefault = readoutPanel ? readoutPanel.innerHTML : "";
 
 let colonyCount = 0;
 let active = null;
@@ -18,6 +20,7 @@ let tick = 0;
 let history = [];
 let lastCount = 0;
 let inoculationPoint = null;
+let isHalted = false;
 
 const baseProfiles = {
   "Escherichia coli": { optimal: 37, ph: 7, oxygen: 18, nutrient: 70 },
@@ -108,6 +111,7 @@ const updateReadout = () => {
     growthRateEl.textContent = "0.0";
     return;
   }
+  if (isHalted) return;
   const values = getControlValues();
   const growth = computeGrowth(values, baseProfiles[active]);
   growthRateEl.textContent = growth.toFixed(2);
@@ -213,7 +217,6 @@ const spawnColony = () => {
   dish.appendChild(colony);
   colonyCount += 1;
   colonyCountEl.textContent = colonyCount.toString();
-  setTimeout(() => colony.remove(), 16000);
 };
 
 const collectSpikeReasons = (values, profile) => {
@@ -271,8 +274,21 @@ const drawChart = () => {
   ctx.stroke();
 };
 
+function haltGrowth(message) {
+  isHalted = true;
+  statusText.textContent = "증식 중지";
+  if (growthTimer) {
+    clearInterval(growthTimer);
+    growthTimer = null;
+  }
+  if (readoutPanel) {
+    readoutPanel.innerHTML = `<div class="readout-alert">${message}</div>`;
+  }
+}
+
 const startGrowth = () => {
   if (!active) return;
+  if (isHalted) return;
   if (growthTimer) clearInterval(growthTimer);
   statusText.textContent = "배양 진행 중";
   const speedMultiplier = getSpeedMultiplier();
@@ -283,6 +299,10 @@ const startGrowth = () => {
     updateReadout();
     if (Math.random() < growth) {
       spawnColony();
+    }
+    if (colonyCount > 300) {
+      haltGrowth("집락 수 300개 초과로 증식을 중지했습니다.");
+      return;
     }
     const delta = colonyCount - lastCount;
     tick += 1;
@@ -311,6 +331,10 @@ const resetDish = () => {
   history = [];
   lastCount = 0;
   inoculationPoint = null;
+  isHalted = false;
+  if (readoutPanel && readoutDefault) {
+    readoutPanel.innerHTML = readoutDefault;
+  }
   if (spikeLog) {
     spikeLog.innerHTML = '<div class="spike-title">스파이크 원인</div><div class="spike-empty">아직 급증 이벤트가 없습니다.</div>';
   }
