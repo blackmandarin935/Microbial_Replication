@@ -34,52 +34,52 @@
           <p class="panel-desc">표본을 중앙 배지로 끌어다 놓으면 배양이 시작됩니다.</p>
           <div class="microbe-list" id="microbeList">
             <div class="microbe-card" draggable="true" data-species="Escherichia coli">
-              <img class="microbe-photo" src="assets/microbes/ecoli.svg" alt="에셔리키아 대장균 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/ecoli.jpg" alt="에셔리키아 대장균 현미경 사진" />
               <div class="card-title">에셔리키아 대장균</div>
               <div class="card-sub">Escherichia coli</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Staphylococcus aureus">
-              <img class="microbe-photo" src="assets/microbes/staph.svg" alt="황색포도상구균 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/staph.png" alt="황색포도상구균 현미경 사진" />
               <div class="card-title">황색포도상구균</div>
               <div class="card-sub">Staphylococcus aureus</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Saccharomyces cerevisiae">
-              <img class="microbe-photo" src="assets/microbes/yeast.svg" alt="맥주효모 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/yeast.jpg" alt="맥주효모 현미경 사진" />
               <div class="card-title">맥주효모</div>
               <div class="card-sub">Saccharomyces cerevisiae</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Penicillium">
-              <img class="microbe-photo" src="assets/microbes/penicillium.svg" alt="페니실리움 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/penicillium.jpg" alt="페니실리움 현미경 사진" />
               <div class="card-title">페니실리움</div>
               <div class="card-sub">Penicillium</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Bacillus subtilis">
-              <img class="microbe-photo" src="assets/microbes/bsubtilis.svg" alt="고초균 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/bsubtilis.png" alt="고초균 현미경 사진" />
               <div class="card-title">고초균</div>
               <div class="card-sub">Bacillus subtilis</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Salmonella enterica">
-              <img class="microbe-photo" src="assets/microbes/salmonella.svg" alt="살모넬라 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/salmonella.png" alt="살모넬라 현미경 사진" />
               <div class="card-title">살모넬라</div>
               <div class="card-sub">Salmonella enterica</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Pseudomonas aeruginosa">
-              <img class="microbe-photo" src="assets/microbes/pseudomonas.svg" alt="녹농균 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/pseudomonas.jpg" alt="녹농균 현미경 사진" />
               <div class="card-title">녹농균</div>
               <div class="card-sub">Pseudomonas aeruginosa</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Lactobacillus acidophilus">
-              <img class="microbe-photo" src="assets/microbes/lactobacillus.svg" alt="아시도필루스 유산균 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/lactobacillus.jpg" alt="아시도필루스 유산균 현미경 사진" />
               <div class="card-title">아시도필루스 유산균</div>
               <div class="card-sub">Lactobacillus acidophilus</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Candida albicans">
-              <img class="microbe-photo" src="assets/microbes/candida.svg" alt="칸디다 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/candida.jpg" alt="칸디다 현미경 사진" />
               <div class="card-title">칸디다</div>
               <div class="card-sub">Candida albicans</div>
             </div>
             <div class="microbe-card" draggable="true" data-species="Deinococcus radiodurans">
-              <img class="microbe-photo" src="assets/microbes/deinococcus.svg" alt="데이노코쿠스 현미경 사진" />
+              <img class="microbe-photo" src="assets/microbes/deinococcus.jpg" alt="데이노코쿠스 현미경 사진" />
               <div class="card-title">데이노코쿠스</div>
               <div class="card-sub">Deinococcus radiodurans</div>
             </div>
@@ -118,7 +118,7 @@
                 <span>집락 수</span>
               </div>
             </div>
-            <canvas id="growthChart" width="520" height="180" aria-label="미생물 번식 그래프"></canvas>
+            <canvas id="growthChart" width="520" height="140" aria-label="미생물 번식 그래프"></canvas>
             <div class="spike-log" id="spikeLog">
               <div class="spike-title">스파이크 원인</div>
               <div class="spike-empty">아직 급증 이벤트가 없습니다.</div>
@@ -129,6 +129,7 @@
         <section class="panel right">
           <h2>통제 변수</h2>
           <p class="panel-desc">실험 조건을 조절해 번식 속도를 변화시켜 보세요.</p>
+          <button class="reset" id="resetBtn">배지 초기화</button>
           <div class="control-list">
             <div class="control" data-control="temperature">
               <label>온도 (°C)</label>
@@ -171,7 +172,6 @@
               <span class="value">1x</span>
             </div>
           </div>
-          <button class="reset" id="resetBtn">배지 초기화</button>
         </section>
       </main>
     </div>

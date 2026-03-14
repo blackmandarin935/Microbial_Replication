@@ -17,6 +17,7 @@ const baseSpeed = 2;
 let tick = 0;
 let history = [];
 let lastCount = 0;
+let inoculationPoint = null;
 
 const baseProfiles = {
   "Escherichia coli": { optimal: 37, ph: 7, oxygen: 18, nutrient: 70 },
@@ -55,6 +56,19 @@ const speciesLabels = {
   "Lactobacillus acidophilus": "아시도필루스 유산균",
   "Candida albicans": "칸디다",
   "Deinococcus radiodurans": "데이노코쿠스",
+};
+
+const spreadProfiles = {
+  "Escherichia coli": { mode: "radial", growth: 0.6 },
+  "Staphylococcus aureus": { mode: "scatter", growth: 0.5 },
+  "Saccharomyces cerevisiae": { mode: "radial", growth: 0.35 },
+  Penicillium: { mode: "radial", growth: 0.9 },
+  "Bacillus subtilis": { mode: "radial", growth: 0.55 },
+  "Salmonella enterica": { mode: "radial", growth: 0.6 },
+  "Pseudomonas aeruginosa": { mode: "radial", growth: 0.5 },
+  "Lactobacillus acidophilus": { mode: "radial", growth: 0.4 },
+  "Candida albicans": { mode: "radial", growth: 0.35 },
+  "Deinococcus radiodurans": { mode: "scatter", growth: 0.45 },
 };
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
@@ -104,37 +118,84 @@ const getSpeedMultiplier = () => {
   return parseFloat(speedInput.value) * baseSpeed;
 };
 
+const clampToDish = (x, y, radius) => {
+  const center = radius;
+  const dx = x - center;
+  const dy = y - center;
+  const distance = Math.hypot(dx, dy);
+  if (distance <= radius) return { x, y };
+  const ratio = radius / distance;
+  return { x: center + dx * ratio, y: center + dy * ratio };
+};
+
 const findSpawnPosition = (size) => {
   const radius = dish.clientWidth / 2 - size / 2 - 10;
-  const clusterRadius = radius * 0.45;
+  const spreadProfile = spreadProfiles[active] || { mode: "radial", growth: 0.6 };
+  const baseClusterRadius = radius * 0.55;
+  const spreadRadius = Math.min(baseClusterRadius, 14 + colonyCount * spreadProfile.growth);
+  const origin =
+    spreadProfile.mode === "scatter"
+      ? {
+          x: Math.random() * radius * 2,
+          y: Math.random() * radius * 2,
+        }
+      : inoculationPoint || { x: radius, y: radius };
   const colonies = Array.from(dish.querySelectorAll(".colony"));
   const maxAttempts = 14;
 
   for (let i = 0; i < maxAttempts; i += 1) {
     const angle = Math.random() * Math.PI * 2;
-    const distance = Math.sqrt(Math.random()) * clusterRadius;
-    const x = radius + distance * Math.cos(angle);
-    const y = radius + distance * Math.sin(angle);
+    const distance = Math.sqrt(Math.random()) * spreadRadius;
+    const x = origin.x + distance * Math.cos(angle);
+    const y = origin.y + distance * Math.sin(angle);
+    const clamped = clampToDish(x, y, radius);
 
     const fits = colonies.every((colony) => {
       const otherSize = parseFloat(colony.dataset.size || "20");
-      const dx = x - parseFloat(colony.dataset.x || "0");
-      const dy = y - parseFloat(colony.dataset.y || "0");
+      const dx = clamped.x - parseFloat(colony.dataset.x || "0");
+      const dy = clamped.y - parseFloat(colony.dataset.y || "0");
       const minDistance = (size + otherSize) * 0.5 * 0.9;
       return Math.hypot(dx, dy) > minDistance;
     });
 
     if (fits) {
-      return { x, y };
+      return { x: clamped.x, y: clamped.y };
     }
   }
 
   const angle = Math.random() * Math.PI * 2;
-  const distance = Math.sqrt(Math.random()) * clusterRadius;
-  return {
-    x: radius + distance * Math.cos(angle),
-    y: radius + distance * Math.sin(angle),
+  const distance = Math.sqrt(Math.random()) * spreadRadius;
+  const fallback = {
+    x: origin.x + distance * Math.cos(angle),
+    y: origin.y + distance * Math.sin(angle),
   };
+  return clampToDish(fallback.x, fallback.y, radius);
+};
+
+const buildDragIcon = (imageEl) => {
+  const size = 44;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "rgba(12, 18, 20, 0.9)";
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+  ctx.fill();
+  if (imageEl && imageEl.complete) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(imageEl, 2, 2, size - 4, size - 4);
+    ctx.restore();
+  }
+  ctx.strokeStyle = "rgba(125, 211, 199, 0.8)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
+  ctx.stroke();
+  return canvas;
 };
 
 const spawnColony = () => {
@@ -249,6 +310,7 @@ const resetDish = () => {
   tick = 0;
   history = [];
   lastCount = 0;
+  inoculationPoint = null;
   if (spikeLog) {
     spikeLog.innerHTML = '<div class="spike-title">스파이크 원인</div><div class="spike-empty">아직 급증 이벤트가 없습니다.</div>';
   }
@@ -264,19 +326,23 @@ document.querySelectorAll(".microbe-card").forEach((card) => {
     event.dataTransfer.setData("text/plain", card.dataset.species);
     event.dataTransfer.effectAllowed = "move";
     card.classList.add("dragging");
+    statusText.textContent = "배지에 접종 위치를 지정하세요";
 
-    const ghost = card.cloneNode(true);
-    ghost.style.position = "absolute";
-    ghost.style.top = "-9999px";
-    ghost.style.left = "-9999px";
-    ghost.style.opacity = "1";
-    document.body.appendChild(ghost);
-    event.dataTransfer.setDragImage(ghost, ghost.offsetWidth / 2, ghost.offsetHeight / 2);
-    requestAnimationFrame(() => ghost.remove());
+    const img = card.querySelector("img");
+    const icon = buildDragIcon(img);
+    icon.style.position = "absolute";
+    icon.style.top = "-9999px";
+    icon.style.left = "-9999px";
+    document.body.appendChild(icon);
+    event.dataTransfer.setDragImage(icon, icon.width / 2, icon.height / 2);
+    requestAnimationFrame(() => icon.remove());
   });
 
   card.addEventListener("dragend", () => {
     card.classList.remove("dragging");
+    if (!active) {
+      statusText.textContent = "배양 대기";
+    }
   });
 });
 
@@ -284,10 +350,16 @@ dish.addEventListener("dragover", (event) => {
   event.preventDefault();
   event.dataTransfer.dropEffect = "move";
   dish.classList.add("drag-over");
+  if (!active) {
+    statusText.textContent = "접종 위치 지정 중";
+  }
 });
 
 dish.addEventListener("dragleave", () => {
   dish.classList.remove("drag-over");
+  if (!active) {
+    statusText.textContent = "배양 대기";
+  }
 });
 
 dish.addEventListener("drop", (event) => {
@@ -299,9 +371,14 @@ dish.addEventListener("drop", (event) => {
     statusText.textContent = "배양 중 - 초기화 필요";
     return;
   }
+  const rect = dish.getBoundingClientRect();
+  const radius = dish.clientWidth / 2 - 20;
+  const rawX = event.clientX - rect.left;
+  const rawY = event.clientY - rect.top;
+  inoculationPoint = clampToDish(rawX, rawY, radius);
   active = species;
   activeSpecies.textContent = speciesLabels[species] || species;
-  statusText.textContent = "샘플 투입 완료";
+  statusText.textContent = "접종 완료";
   updateReadout();
   startGrowth();
   spawnColony();
