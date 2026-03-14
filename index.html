@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>미생물 번식 시뮬레이터</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="lab-bg">
+      <header class="top-bar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <div>
+            <div class="brand-title">미생물 번식 시뮬레이터</div>
+            <div class="brand-sub">Laboratory Growth Chamber</div>
+          </div>
+        </div>
+        <div class="status">
+          <span class="status-dot"></span>
+          <span id="statusText">배양 대기</span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="panel left">
+          <h2>미생물 표본</h2>
+          <p class="panel-desc">표본을 중앙 배지로 끌어다 놓으면 배양이 시작됩니다.</p>
+          <div class="microbe-list" id="microbeList">
+            <div class="microbe-card" draggable="true" data-species="Escherichia coli">
+              <div class="card-title">Escherichia coli</div>
+              <div class="card-meta">그램 음성 박테리아</div>
+            </div>
+            <div class="microbe-card" draggable="true" data-species="Staphylococcus aureus">
+              <div class="card-title">Staphylococcus aureus</div>
+              <div class="card-meta">그램 양성 구균</div>
+            </div>
+            <div class="microbe-card" draggable="true" data-species="Saccharomyces cerevisiae">
+              <div class="card-title">Saccharomyces cerevisiae</div>
+              <div class="card-meta">효모</div>
+            </div>
+            <div class="microbe-card" draggable="true" data-species="Penicillium">
+              <div class="card-title">Penicillium</div>
+              <div class="card-meta">곰팡이</div>
+            </div>
+            <div class="microbe-card" draggable="true" data-species="Bacillus subtilis">
+              <div class="card-title">Bacillus subtilis</div>
+              <div class="card-meta">내생포자 형성</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="center">
+          <div class="dish-wrap">
+            <div class="dish" id="dish">
+              <div class="dish-ring"></div>
+              <div class="dish-grid"></div>
+              <div class="dish-label">배지</div>
+            </div>
+          </div>
+          <div class="readout">
+            <div>
+              <div class="readout-label">활성 균주</div>
+              <div class="readout-value" id="activeSpecies">없음</div>
+            </div>
+            <div>
+              <div class="readout-label">예상 증식</div>
+              <div class="readout-value" id="growthRate">0.0</div>
+            </div>
+            <div>
+              <div class="readout-label">집락 밀도</div>
+              <div class="readout-value" id="colonyCount">0</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel right">
+          <h2>통제 변수</h2>
+          <p class="panel-desc">실험 조건을 조절해 번식 속도를 변화시켜 보세요.</p>
+          <div class="control" data-control="temperature">
+            <label>온도 (°C)</label>
+            <input type="range" min="10" max="45" value="37" />
+            <span class="value">37</span>
+          </div>
+          <div class="control" data-control="humidity">
+            <label>습도 (%)</label>
+            <input type="range" min="20" max="90" value="60" />
+            <span class="value">60</span>
+          </div>
+          <div class="control" data-control="ph">
+            <label>pH</label>
+            <input type="range" min="3" max="10" step="0.1" value="7" />
+            <span class="value">7.0</span>
+          </div>
+          <div class="control" data-control="oxygen">
+            <label>산소 농도 (%)</label>
+            <input type="range" min="0" max="21" value="18" />
+            <span class="value">18</span>
+          </div>
+          <div class="control" data-control="nutrient">
+            <label>영양 농도 (%)</label>
+            <input type="range" min="10" max="100" value="70" />
+            <span class="value">70</span>
+          </div>
+          <div class="control" data-control="radiation">
+            <label>방사선 (mGy)</label>
+            <input type="range" min="0" max="200" value="20" />
+            <span class="value">20</span>
+          </div>
+          <div class="control" data-control="antibiotic">
+            <label>항생제 농도 (µg/mL)</label>
+            <input type="range" min="0" max="50" value="5" />
+            <span class="value">5</span>
+          </div>
+          <button class="reset" id="resetBtn">배지 초기화</button>
+        </section>
+      </main>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
