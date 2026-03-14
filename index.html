@@ -84,6 +84,15 @@
               <div class="card-sub">Deinococcus radiodurans</div>
             </div>
           </div>
+          <div class="disinfection">
+            <div class="disinfection-title">소독</div>
+            <div class="disinfection-desc">소독 기구를 선택하세요.</div>
+            <div class="disinfection-list" id="disinfectionList">
+              <button class="disinfection-item" type="button" aria-pressed="false">에탄올</button>
+              <button class="disinfection-item" type="button" aria-pressed="false">차아염소산</button>
+              <button class="disinfection-item" type="button" aria-pressed="false">과산화수소</button>
+            </div>
+          </div>
         </section>
 
         <section class="center">
@@ -130,6 +139,7 @@
           <h2>통제 변수</h2>
           <p class="panel-desc">실험 조건을 조절해 번식 속도를 변화시켜 보세요.</p>
           <button class="reset" id="resetBtn">배지 초기화</button>
+          <button class="reset" id="resetControlsBtn">통제 변수 초기화</button>
           <div class="control-list">
             <div class="control" data-control="temperature">
               <label>온도 (°C)</label>
@@ -150,6 +160,11 @@
               <label>산소 농도 (%)</label>
               <input type="range" min="0" max="21" value="18" />
               <span class="value">18</span>
+            </div>
+            <div class="control" data-control="co2">
+              <label>이산화탄소 농도 (%)</label>
+              <input type="range" min="0" max="10" value="5" step="0.5" />
+              <span class="value">5</span>
             </div>
             <div class="control" data-control="nutrient">
               <label>영양 농도 (%)</label>
@@ -174,6 +189,10 @@
           </div>
         </section>
       </main>
+    </div>
+    <div class="disinfection-cursor" id="disinfectionCursor" aria-hidden="true">
+      <div class="cursor-core"></div>
+      <div class="cursor-label" id="disinfectionCursorLabel"></div>
     </div>
     <script src="script.js"></script>
   </body>
