@@ -107,6 +107,7 @@ body {
   gap: 20px;
   position: relative;
   z-index: 1;
+  align-items: stretch;
 }
 
 .panel {
@@ -119,6 +120,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  height: 100%;
 }
 
 .panel.left {
@@ -147,6 +149,7 @@ body {
   margin-top: 6px;
   overflow-y: auto;
   padding-right: 6px;
+  flex: 1;
 }
 
 .microbe-card {
@@ -203,6 +206,7 @@ body {
   justify-content: flex-start;
   gap: 20px;
   padding-top: 6px;
+  height: 100%;
 }
 
 .dish-wrap {
@@ -452,6 +456,7 @@ body {
   gap: 10px;
   overflow-y: auto;
   padding-right: 6px;
+  flex: 1;
 }
 
 .control label {
@@ -471,7 +476,7 @@ body {
 }
 
 .reset {
-  margin-top: auto;
+  margin-top: 12px;
   padding: 12px;
   border-radius: 12px;
   border: 1px solid rgba(255, 179, 123, 0.4);
