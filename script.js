@@ -5,10 +5,13 @@ const growthRateEl = document.getElementById("growthRate");
 const colonyCountEl = document.getElementById("colonyCount");
 const resetBtn = document.getElementById("resetBtn");
 const controls = document.querySelectorAll(".control");
+const speedInput = document.querySelector('[data-control="speed"] input');
 
 let colonyCount = 0;
 let active = null;
 let growthTimer = null;
+const baseInterval = 900;
+const baseSpeed = 2;
 
 const baseProfiles = {
   "Escherichia coli": { optimal: 37, ph: 7, oxygen: 18, nutrient: 70 },
@@ -16,6 +19,14 @@ const baseProfiles = {
   "Saccharomyces cerevisiae": { optimal: 30, ph: 5.5, oxygen: 12, nutrient: 75 },
   Penicillium: { optimal: 25, ph: 6.5, oxygen: 14, nutrient: 60 },
   "Bacillus subtilis": { optimal: 33, ph: 7.5, oxygen: 19, nutrient: 55 },
+};
+
+const colonyProfiles = {
+  "Escherichia coli": { className: "ecoli", size: 26 },
+  "Staphylococcus aureus": { className: "staph", size: 28 },
+  "Saccharomyces cerevisiae": { className: "yeast", size: 22 },
+  Penicillium: { className: "penicillium", size: 28 },
+  "Bacillus subtilis": { className: "bacillus", size: 28 },
 };
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
@@ -60,16 +71,55 @@ const updateReadout = () => {
   growthRateEl.textContent = growth.toFixed(2);
 };
 
-const spawnColony = () => {
-  const colony = document.createElement("div");
-  colony.className = "colony";
-  const radius = dish.clientWidth / 2 - 30;
+const getSpeedMultiplier = () => {
+  if (!speedInput) return baseSpeed;
+  return parseFloat(speedInput.value) * baseSpeed;
+};
+
+const findSpawnPosition = (size) => {
+  const radius = dish.clientWidth / 2 - size / 2 - 10;
+  const colonies = Array.from(dish.querySelectorAll(".colony"));
+  const maxAttempts = 14;
+
+  for (let i = 0; i < maxAttempts; i += 1) {
+    const angle = Math.random() * Math.PI * 2;
+    const distance = Math.sqrt(Math.random()) * radius;
+    const x = radius + distance * Math.cos(angle);
+    const y = radius + distance * Math.sin(angle);
+
+    const fits = colonies.every((colony) => {
+      const otherSize = parseFloat(colony.dataset.size || "20");
+      const dx = x - parseFloat(colony.dataset.x || "0");
+      const dy = y - parseFloat(colony.dataset.y || "0");
+      const minDistance = (size + otherSize) * 0.5 * 0.9;
+      return Math.hypot(dx, dy) > minDistance;
+    });
+
+    if (fits) {
+      return { x, y };
+    }
+  }
+
   const angle = Math.random() * Math.PI * 2;
-  const distance = Math.random() * radius;
-  const x = radius + distance * Math.cos(angle);
-  const y = radius + distance * Math.sin(angle);
+  const distance = Math.sqrt(Math.random()) * radius;
+  return {
+    x: radius + distance * Math.cos(angle),
+    y: radius + distance * Math.sin(angle),
+  };
+};
+
+const spawnColony = () => {
+  if (!active) return;
+  const colony = document.createElement("div");
+  const profile = colonyProfiles[active];
+  colony.className = `colony ${profile.className}`;
+  const size = profile.size;
+  const { x, y } = findSpawnPosition(size);
   colony.style.left = `${x}px`;
   colony.style.top = `${y}px`;
+  colony.dataset.x = x.toString();
+  colony.dataset.y = y.toString();
+  colony.dataset.size = size.toString();
   dish.appendChild(colony);
   colonyCount += 1;
   colonyCountEl.textContent = colonyCount.toString();
@@ -80,6 +130,8 @@ const startGrowth = () => {
   if (!active) return;
   if (growthTimer) clearInterval(growthTimer);
   statusText.textContent = "배양 진행 중";
+  const speedMultiplier = getSpeedMultiplier();
+  const interval = Math.max(80, baseInterval / speedMultiplier);
   growthTimer = setInterval(() => {
     const values = getControlValues();
     const growth = computeGrowth(values, baseProfiles[active]);
@@ -87,7 +139,7 @@ const startGrowth = () => {
     if (Math.random() < growth) {
       spawnColony();
     }
-  }, 900);
+  }, interval);
 };
 
 const resetDish = () => {
@@ -136,7 +188,12 @@ controls.forEach((control) => {
   const input = control.querySelector("input");
   const value = control.querySelector(".value");
   input.addEventListener("input", () => {
-    value.textContent = input.value;
+    if (control.dataset.control === "speed") {
+      value.textContent = `${input.value}x`;
+      startGrowth();
+    } else {
+      value.textContent = input.value;
+    }
     updateReadout();
   });
 });
