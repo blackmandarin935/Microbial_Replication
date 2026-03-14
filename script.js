@@ -8,7 +8,6 @@ const controls = document.querySelectorAll(".control");
 const speedInput = document.querySelector('[data-control="speed"] input');
 const growthChart = document.getElementById("growthChart");
 const spikeLog = document.getElementById("spikeLog");
-const guidancePanel = document.getElementById("guidancePanel");
 
 let colonyCount = 0;
 let active = null;
@@ -93,16 +92,11 @@ const computeGrowth = (values, profile) => {
 const updateReadout = () => {
   if (!active) {
     growthRateEl.textContent = "0.0";
-    if (guidancePanel) {
-      guidancePanel.innerHTML =
-        '<div class="guidance-title">번식 최적화 방향</div><div class="guidance-empty">배양 중인 미생물을 선택하세요.</div>';
-    }
     return;
   }
   const values = getControlValues();
   const growth = computeGrowth(values, baseProfiles[active]);
   growthRateEl.textContent = growth.toFixed(2);
-  updateGuidance(values, baseProfiles[active]);
 };
 
 const getSpeedMultiplier = () => {
@@ -184,31 +178,6 @@ const updateSpikeLog = (message, reasons) => {
   if (items.length > 4) items[0].remove();
 };
 
-const getDirection = (current, target, tolerance) => {
-  if (Math.abs(current - target) <= tolerance) return "=";
-  return current < target ? "+" : "-";
-};
-
-const updateGuidance = (values, profile) => {
-  if (!guidancePanel) return;
-  const items = [
-    { label: "온도", dir: getDirection(values.temperature, profile.optimal, 1.5) },
-    { label: "습도", dir: values.humidity >= 65 ? "=" : "+" },
-    { label: "pH", dir: getDirection(values.ph, profile.ph, 0.3) },
-    { label: "산소", dir: getDirection(values.oxygen, profile.oxygen, 1.5) },
-    { label: "영양", dir: values.nutrient >= 70 ? "=" : "+" },
-    { label: "방사선", dir: values.radiation <= 15 ? "=" : "-" },
-    { label: "항생제", dir: values.antibiotic <= 5 ? "=" : "-" },
-  ];
-
-  guidancePanel.innerHTML = '<div class="guidance-title">번식 최적화 방향</div>';
-  items.forEach((item) => {
-    const row = document.createElement("div");
-    row.className = "guidance-item";
-    row.innerHTML = `<span class="guidance-label">${item.label}</span><span class="guidance-direction">${item.dir}</span>`;
-    guidancePanel.appendChild(row);
-  });
-};
 
 const drawChart = () => {
   if (!growthChart) return;
@@ -280,10 +249,6 @@ const resetDish = () => {
   tick = 0;
   history = [];
   lastCount = 0;
-  if (guidancePanel) {
-    guidancePanel.innerHTML =
-      '<div class="guidance-title">번식 최적화 방향</div><div class="guidance-empty">배양 중인 미생물을 선택하세요.</div>';
-  }
   if (spikeLog) {
     spikeLog.innerHTML = '<div class="spike-title">스파이크 원인</div><div class="spike-empty">아직 급증 이벤트가 없습니다.</div>';
   }

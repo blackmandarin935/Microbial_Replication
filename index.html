@@ -129,49 +129,47 @@
         <section class="panel right">
           <h2>통제 변수</h2>
           <p class="panel-desc">실험 조건을 조절해 번식 속도를 변화시켜 보세요.</p>
-          <div class="control" data-control="temperature">
-            <label>온도 (°C)</label>
-            <input type="range" min="10" max="45" value="37" />
-            <span class="value">37</span>
-          </div>
-          <div class="control" data-control="humidity">
-            <label>습도 (%)</label>
-            <input type="range" min="20" max="90" value="60" />
-            <span class="value">60</span>
-          </div>
-          <div class="control" data-control="ph">
-            <label>pH</label>
-            <input type="range" min="3" max="10" step="0.1" value="7" />
-            <span class="value">7.0</span>
-          </div>
-          <div class="control" data-control="oxygen">
-            <label>산소 농도 (%)</label>
-            <input type="range" min="0" max="21" value="18" />
-            <span class="value">18</span>
-          </div>
-          <div class="control" data-control="nutrient">
-            <label>영양 농도 (%)</label>
-            <input type="range" min="10" max="100" value="70" />
-            <span class="value">70</span>
-          </div>
-          <div class="control" data-control="radiation">
-            <label>방사선 (mGy)</label>
-            <input type="range" min="0" max="200" value="20" />
-            <span class="value">20</span>
-          </div>
-          <div class="control" data-control="antibiotic">
-            <label>항생제 농도 (µg/mL)</label>
-            <input type="range" min="0" max="50" value="5" />
-            <span class="value">5</span>
-          </div>
-          <div class="control" data-control="speed">
-            <label>배속</label>
-            <input type="range" min="0.5" max="64" value="1" step="0.5" />
-            <span class="value">1x</span>
-          </div>
-          <div class="guidance" id="guidancePanel">
-            <div class="guidance-title">번식 최적화 방향</div>
-            <div class="guidance-empty">배양 중인 미생물을 선택하세요.</div>
+          <div class="control-list">
+            <div class="control" data-control="temperature">
+              <label>온도 (°C)</label>
+              <input type="range" min="10" max="45" value="37" />
+              <span class="value">37</span>
+            </div>
+            <div class="control" data-control="humidity">
+              <label>습도 (%)</label>
+              <input type="range" min="20" max="90" value="60" />
+              <span class="value">60</span>
+            </div>
+            <div class="control" data-control="ph">
+              <label>pH</label>
+              <input type="range" min="3" max="10" step="0.1" value="7" />
+              <span class="value">7.0</span>
+            </div>
+            <div class="control" data-control="oxygen">
+              <label>산소 농도 (%)</label>
+              <input type="range" min="0" max="21" value="18" />
+              <span class="value">18</span>
+            </div>
+            <div class="control" data-control="nutrient">
+              <label>영양 농도 (%)</label>
+              <input type="range" min="10" max="100" value="70" />
+              <span class="value">70</span>
+            </div>
+            <div class="control" data-control="radiation">
+              <label>방사선 (mGy)</label>
+              <input type="range" min="0" max="200" value="20" />
+              <span class="value">20</span>
+            </div>
+            <div class="control" data-control="antibiotic">
+              <label>항생제 농도 (µg/mL)</label>
+              <input type="range" min="0" max="50" value="5" />
+              <span class="value">5</span>
+            </div>
+            <div class="control" data-control="speed">
+              <label>배속</label>
+              <input type="range" min="0.5" max="64" value="1" step="0.5" />
+              <span class="value">1x</span>
+            </div>
           </div>
           <button class="reset" id="resetBtn">배지 초기화</button>
         </section>
