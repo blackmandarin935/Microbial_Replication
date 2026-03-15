@@ -30,7 +30,8 @@ let selectedDisinfection = "";
 let isDisinfecting = false;
 let disinfectionZones = [];
 const disinfectionDuration = 10000;
-const disinfectionRadius = 42;
+const disinfectionRadius = 28;
+let disinfectionPointerId = null;
 
 const baseProfiles = {
   "Escherichia coli": { optimal: 37, ph: 7, oxygen: 18, co2: 5, nutrient: 70 },
@@ -436,6 +437,22 @@ dish.addEventListener("dragover", (event) => {
   }
 });
 
+dish.addEventListener("dragstart", (event) => {
+  if (!selectedDisinfection) return;
+  event.preventDefault();
+});
+
+dish.addEventListener("dragover", (event) => {
+  if (!selectedDisinfection) return;
+  event.preventDefault();
+});
+
+dish.addEventListener("drop", (event) => {
+  if (!selectedDisinfection) return;
+  event.preventDefault();
+  dish.classList.remove("drag-over");
+});
+
 dish.addEventListener("dragleave", () => {
   dish.classList.remove("drag-over");
   if (!active) {
@@ -535,6 +552,11 @@ const updateDisinfectionCursor = (event) => {
   disinfectionCursor.style.top = `${event.clientY}px`;
 };
 
+const stopDisinfecting = () => {
+  isDisinfecting = false;
+  disinfectionPointerId = null;
+};
+
 const disinfectAt = (event) => {
   if (!selectedDisinfection) return;
   const rect = dish.getBoundingClientRect();
@@ -554,14 +576,27 @@ const disinfectAt = (event) => {
   });
   pruneDisinfectionZones();
   const expiresAt = Date.now() + disinfectionDuration;
+  let refreshedZone = null;
   disinfectionZones.forEach((zone) => {
-    if (Math.hypot(x - zone.x, y - zone.y) <= radius + zone.radius) {
+    if (!refreshedZone && Math.hypot(x - zone.x, y - zone.y) <= radius + zone.radius) {
       zone.expiresAt = Math.max(zone.expiresAt, expiresAt);
       if (zone.el) {
-        zone.el.style.animationDuration = `${(zone.expiresAt - Date.now()) / 1000}s`;
+        zone.el.style.animation = "none";
+        void zone.el.offsetHeight;
+        zone.el.style.animation = "";
+        zone.el.style.animationDuration = `${disinfectionDuration / 1000}s`;
       }
+      refreshedZone = zone;
     }
   });
+  if (refreshedZone) {
+    if (removed > 0) {
+      colonyCount = Math.max(0, colonyCount - removed);
+      if (colonyCountEl) colonyCountEl.textContent = colonyCount.toString();
+      drawChart();
+    }
+    return;
+  }
   const zoneEl = document.createElement("div");
   zoneEl.className = "disinfection-zone";
   zoneEl.style.left = `${x}px`;
@@ -569,6 +604,7 @@ const disinfectAt = (event) => {
   zoneEl.style.width = `${radius * 2}px`;
   zoneEl.style.height = `${radius * 2}px`;
   zoneEl.style.animationDuration = `${disinfectionDuration / 1000}s`;
+  zoneEl.style.zIndex = "2";
   dish.appendChild(zoneEl);
   disinfectionZones.push({
     x,
@@ -584,20 +620,75 @@ const disinfectAt = (event) => {
   }
 };
 
-document.addEventListener("mousemove", (event) => {
+document.addEventListener("pointermove", (event) => {
   updateDisinfectionCursor(event);
   pruneDisinfectionZones();
-  if (isDisinfecting) disinfectAt(event);
+  if (isDisinfecting) {
+    if (event.buttons === 0) {
+      stopDisinfecting();
+      return;
+    }
+    if (disinfectionPointerId !== null && event.pointerId !== disinfectionPointerId) {
+      return;
+    }
+    disinfectAt(event);
+  }
 });
 
-dish.addEventListener("mousedown", (event) => {
+dish.addEventListener("pointerdown", (event) => {
   if (!selectedDisinfection) return;
+  if (event.button !== 0) return;
   isDisinfecting = true;
+  disinfectionPointerId = event.pointerId;
+  if (dish.setPointerCapture) {
+    dish.setPointerCapture(event.pointerId);
+  }
   disinfectAt(event);
 });
 
-document.addEventListener("mouseup", () => {
-  isDisinfecting = false;
+document.addEventListener("pointerup", (event) => {
+  if (disinfectionPointerId !== null && event.pointerId !== disinfectionPointerId) return;
+  stopDisinfecting();
+});
+
+dish.addEventListener("pointerup", (event) => {
+  if (disinfectionPointerId !== null && event.pointerId !== disinfectionPointerId) return;
+  stopDisinfecting();
+});
+
+dish.addEventListener("pointercancel", (event) => {
+  if (disinfectionPointerId !== null && event.pointerId !== disinfectionPointerId) return;
+  stopDisinfecting();
+});
+
+dish.addEventListener("lostpointercapture", () => {
+  stopDisinfecting();
+});
+
+document.addEventListener("dragstart", () => {
+  stopDisinfecting();
+});
+
+document.addEventListener("dragend", () => {
+  stopDisinfecting();
+});
+
+document.addEventListener("drop", () => {
+  stopDisinfecting();
+});
+
+document.addEventListener("mouseleave", () => {
+  stopDisinfecting();
+});
+
+window.addEventListener("blur", () => {
+  stopDisinfecting();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") {
+    stopDisinfecting();
+  }
 });
 
 updateReadout();

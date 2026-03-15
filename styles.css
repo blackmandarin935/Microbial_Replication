@@ -234,6 +234,7 @@ body.disinfecting-active {
   justify-content: center;
   transition: transform 0.2s ease;
   overflow: hidden;
+  user-select: none;
 }
 
 .dish.drag-over {
@@ -588,18 +589,18 @@ body.disinfecting-active {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 2px dashed rgba(255, 179, 123, 0.8);
-  background: radial-gradient(circle, rgba(255, 179, 123, 0.25), transparent 65%);
-  box-shadow: 0 0 18px rgba(255, 179, 123, 0.45);
+  border: 2px dashed rgba(0, 0, 0, 0.85);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.25), transparent 65%);
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.45);
 }
 
 .cursor-label {
   font-size: 12px;
   font-family: "IBM Plex Mono", monospace;
-  color: var(--warning);
+  color: #0a0a0a;
   text-align: center;
   white-space: nowrap;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
 }
 
 .disinfection-zone {
@@ -608,10 +609,11 @@ body.disinfecting-active {
   top: 0;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 2px dashed rgba(255, 179, 123, 0.7);
-  background: radial-gradient(circle, rgba(255, 179, 123, 0.2), transparent 65%);
-  box-shadow: 0 0 16px rgba(255, 179, 123, 0.25) inset,
-    0 0 18px rgba(255, 179, 123, 0.35);
+  z-index: 2;
+  border: 2px dashed rgba(0, 0, 0, 0.7);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.18), transparent 65%);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.25) inset,
+    0 0 18px rgba(0, 0, 0, 0.35);
   pointer-events: none;
   animation-name: disinfect-fade;
   animation-timing-function: linear;
