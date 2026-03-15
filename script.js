@@ -88,7 +88,13 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 const pruneDisinfectionZones = () => {
   const now = Date.now();
-  disinfectionZones = disinfectionZones.filter((zone) => zone.expiresAt > now);
+  disinfectionZones = disinfectionZones.filter((zone) => {
+    const active = zone.expiresAt > now;
+    if (!active && zone.el) {
+      zone.el.remove();
+    }
+    return active;
+  });
 };
 
 const isPointDisinfected = (x, y) => {
@@ -359,6 +365,7 @@ const startGrowth = () => {
 
 const resetDish = () => {
   dish.querySelectorAll(".colony").forEach((node) => node.remove());
+  dish.querySelectorAll(".disinfection-zone").forEach((node) => node.remove());
   colonyCount = 0;
   if (colonyCountEl) colonyCountEl.textContent = "0";
   active = null;
@@ -546,14 +553,29 @@ const disinfectAt = (event) => {
     }
   });
   pruneDisinfectionZones();
-  disinfectionZones = disinfectionZones.filter((zone) =>
-    Math.hypot(x - zone.x, y - zone.y) > radius + zone.radius
-  );
+  const expiresAt = Date.now() + disinfectionDuration;
+  disinfectionZones.forEach((zone) => {
+    if (Math.hypot(x - zone.x, y - zone.y) <= radius + zone.radius) {
+      zone.expiresAt = Math.max(zone.expiresAt, expiresAt);
+      if (zone.el) {
+        zone.el.style.animationDuration = `${(zone.expiresAt - Date.now()) / 1000}s`;
+      }
+    }
+  });
+  const zoneEl = document.createElement("div");
+  zoneEl.className = "disinfection-zone";
+  zoneEl.style.left = `${x}px`;
+  zoneEl.style.top = `${y}px`;
+  zoneEl.style.width = `${radius * 2}px`;
+  zoneEl.style.height = `${radius * 2}px`;
+  zoneEl.style.animationDuration = `${disinfectionDuration / 1000}s`;
+  dish.appendChild(zoneEl);
   disinfectionZones.push({
     x,
     y,
     radius,
-    expiresAt: Date.now() + disinfectionDuration,
+    expiresAt,
+    el: zoneEl,
   });
   if (removed > 0) {
     colonyCount = Math.max(0, colonyCount - removed);

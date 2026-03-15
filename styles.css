@@ -602,6 +602,31 @@ body.disinfecting-active {
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
+.disinfection-zone {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 179, 123, 0.7);
+  background: radial-gradient(circle, rgba(255, 179, 123, 0.2), transparent 65%);
+  box-shadow: 0 0 16px rgba(255, 179, 123, 0.25) inset,
+    0 0 18px rgba(255, 179, 123, 0.35);
+  pointer-events: none;
+  animation-name: disinfect-fade;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes disinfect-fade {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (max-width: 1100px) {
   .workspace {
     grid-template-columns: 1fr;
