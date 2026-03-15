@@ -28,6 +28,9 @@ let inoculationPoint = null;
 let isHalted = false;
 let selectedDisinfection = "";
 let isDisinfecting = false;
+let disinfectionZones = [];
+const disinfectionDuration = 10000;
+const disinfectionRadius = 42;
 
 const baseProfiles = {
   "Escherichia coli": { optimal: 37, ph: 7, oxygen: 18, co2: 5, nutrient: 70 },
@@ -82,6 +85,16 @@ const spreadProfiles = {
 };
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const pruneDisinfectionZones = () => {
+  const now = Date.now();
+  disinfectionZones = disinfectionZones.filter((zone) => zone.expiresAt > now);
+};
+
+const isPointDisinfected = (x, y) => {
+  pruneDisinfectionZones();
+  return disinfectionZones.some((zone) => Math.hypot(x - zone.x, y - zone.y) <= zone.radius);
+};
 
 const getControlValues = () => {
   const values = {};
@@ -162,6 +175,9 @@ const findSpawnPosition = (size) => {
     const x = origin.x + distance * Math.cos(angle);
     const y = origin.y + distance * Math.sin(angle);
     const clamped = clampToDish(x, y, radius);
+    if (isPointDisinfected(clamped.x, clamped.y)) {
+      continue;
+    }
 
     const fits = colonies.every((colony) => {
       const otherSize = parseFloat(colony.dataset.size || "20");
@@ -182,7 +198,11 @@ const findSpawnPosition = (size) => {
     x: origin.x + distance * Math.cos(angle),
     y: origin.y + distance * Math.sin(angle),
   };
-  return clampToDish(fallback.x, fallback.y, radius);
+  const clampedFallback = clampToDish(fallback.x, fallback.y, radius);
+  if (isPointDisinfected(clampedFallback.x, clampedFallback.y)) {
+    return null;
+  }
+  return clampedFallback;
 };
 
 const buildDragIcon = (imageEl) => {
@@ -217,7 +237,9 @@ const spawnColony = () => {
   const profile = colonyProfiles[active];
   colony.className = `colony ${profile.className}`;
   const size = profile.size;
-  const { x, y } = findSpawnPosition(size);
+  const position = findSpawnPosition(size);
+  if (!position) return;
+  const { x, y } = position;
   colony.style.left = `${x}px`;
   colony.style.top = `${y}px`;
   colony.dataset.x = x.toString();
@@ -363,6 +385,7 @@ const resetDish = () => {
   }
   selectedDisinfection = "";
   isDisinfecting = false;
+  disinfectionZones = [];
   document.body.classList.remove("disinfecting-active");
   if (disinfectionCursor) disinfectionCursor.classList.remove("is-active");
   drawChart();
@@ -512,8 +535,7 @@ const disinfectAt = (event) => {
   const y = event.clientY - rect.top;
   if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
   const colonies = Array.from(dish.querySelectorAll(".colony"));
-  if (!colonies.length) return;
-  const radius = 42;
+  const radius = disinfectionRadius;
   let removed = 0;
   colonies.forEach((colony) => {
     const cx = parseFloat(colony.dataset.x || "0");
@@ -522,6 +544,16 @@ const disinfectAt = (event) => {
       colony.remove();
       removed += 1;
     }
+  });
+  pruneDisinfectionZones();
+  disinfectionZones = disinfectionZones.filter((zone) =>
+    Math.hypot(x - zone.x, y - zone.y) > radius + zone.radius
+  );
+  disinfectionZones.push({
+    x,
+    y,
+    radius,
+    expiresAt: Date.now() + disinfectionDuration,
   });
   if (removed > 0) {
     colonyCount = Math.max(0, colonyCount - removed);
@@ -532,6 +564,7 @@ const disinfectAt = (event) => {
 
 document.addEventListener("mousemove", (event) => {
   updateDisinfectionCursor(event);
+  pruneDisinfectionZones();
   if (isDisinfecting) disinfectAt(event);
 });
 
